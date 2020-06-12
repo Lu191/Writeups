@@ -1,2 +1,2 @@
 # Writeups
-Writeups about CTF's challenge and hackthebox machines
+Writeups about CTF challenges and hackthebox machines
