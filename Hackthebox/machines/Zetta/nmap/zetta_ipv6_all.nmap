@@ -1,0 +1,11 @@
+# Nmap 7.80 scan initiated Tue Sep 17 12:51:45 2019 as: nmap -6 -p- -oA nmap/zetta_ipv6_all dead:beef::250:56ff:feb9:b819
+Nmap scan report for dead:beef::250:56ff:feb9:b819
+Host is up (0.057s latency).
+Not shown: 65531 closed ports
+PORT     STATE SERVICE
+21/tcp   open  ftp
+22/tcp   open  ssh
+80/tcp   open  http
+8730/tcp open  unknown
+
+# Nmap done at Tue Sep 17 12:52:47 2019 -- 1 IP address (1 host up) scanned in 62.05 seconds
