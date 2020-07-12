@@ -1,0 +1,4 @@
+# Nmap 7.80 scan initiated Mon Mar 30 12:32:21 2020 as: nmap -sC -sV -oA nmap/book 10.10.10.176
+Host: 10.10.10.176 ()	Status: Up
+Host: 10.10.10.176 ()	Ports: 22/open/tcp//ssh//OpenSSH 7.6p1 Ubuntu 4ubuntu0.3 (Ubuntu Linux; protocol 2.0)/, 80/open/tcp//http//Apache httpd 2.4.29 ((Ubuntu))/	Ignored State: closed (998)
+# Nmap done at Mon Mar 30 12:32:36 2020 -- 1 IP address (1 host up) scanned in 14.97 seconds

