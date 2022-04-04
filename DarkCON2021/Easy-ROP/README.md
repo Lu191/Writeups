@@ -4,6 +4,7 @@
 - Points: 441
 - Solves: 84
 - Solved by: Lu191
+- Link: https://r00tstici.unisalento.it/darkcon-ctf-writeup/
 
 ## Description
 
